@@ -1,0 +1,32 @@
+# timeseries_lstm.py
+import numpy as np
+import tensorflow as tf
+from tensorflow.keras import layers, Sequential
+
+# 1. 시계열 데이터 생성 (sine wave)
+x = np.arange(0, 100, 0.1)
+y = np.sin(x)
+
+seq_len = 20
+data_x, data_y = [], []
+
+# 2. 시퀀스 만들기
+for i in range(len(y) - seq_len):
+    data_x.append(y[i:i+seq_len])
+    data_y.append(y[i+seq_len])
+
+data_x = np.array(data_x).reshape(-1, seq_len, 1)
+data_y = np.array(data_y)
+
+# 3. 모델 구성
+model = Sequential([
+    layers.LSTM(32, input_shape=(seq_len, 1)),
+    layers.Dense(1)
+])
+
+model.compile(optimizer="adam", loss="mse")
+model.fit(data_x, data_y, epochs=5, batch_size=32)
+
+# 4. 미래 예측
+pred = model.predict(data_x[-1].reshape(1, seq_len, 1))
+print("다음 값 예측:", pred[0][0])
